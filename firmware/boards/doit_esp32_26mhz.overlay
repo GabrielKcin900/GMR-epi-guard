@@ -1,0 +1,30 @@
+/*
+ * DOIT ESP32 DevKit — cristal 26 MHz + perifericos EPI Guard.
+ *
+ * D18 da placa = GPIO18 (buzzer ativo). SPI3 usa GPIO18 por padrao — desabilitado.
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+&cpu0 {
+	xtal-freq = <26000000>;
+};
+
+&spi3 {
+	status = "disabled";
+};
+
+/ {
+	aliases {
+		buzzer = &buzzer0;
+	};
+
+	buzzers {
+		compatible = "gpio-leds";
+
+		buzzer0: buzzer_0 {
+			gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
+			label = "Buzzer";
+		};
+	};
+};

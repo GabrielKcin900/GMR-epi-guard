@@ -1,0 +1,48 @@
+# --- Zephyr / firmware ---
+firmware/build/
+**/build/
+*.elf
+*.bin
+*.map
+*.hex
+*.uf2
+*.lst
+*.o
+*.a
+
+# Twister / test artifacts
+twister-out/
+twister.log
+
+# --- Node.js (api/) ---
+api/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# --- Secrets / ambiente local ---
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+
+# --- Logs e temporarios ---
+*.log
+*.tmp
+.cache/

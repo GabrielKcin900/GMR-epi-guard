@@ -35,8 +35,13 @@ static void net_thread(void)
 			continue;
 		}
 
-		LOG_INF("[net stub] responderia ao dashboard: allowed=%d req_id=%u missing=%u",
-			res.allowed, res.req_id, res.missing_count);
+		if (res.unknown_person) {
+			LOG_INF("[net stub] responderia ao dashboard: unknown_person req_id=%u",
+				res.req_id);
+		} else {
+			LOG_INF("[net stub] responderia ao dashboard: allowed=%d req_id=%u missing=%u",
+				res.allowed, res.req_id, res.missing_count);
+		}
 	}
 }
 

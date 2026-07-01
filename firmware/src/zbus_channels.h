@@ -31,6 +31,7 @@ struct verify_result {
 	uint32_t           req_id;
 	enum verify_status status;
 	bool               allowed;
+	bool               unknown_person;
 	char               missing[EPI_MAX_ITEMS][EPI_NAME_LEN];
 	uint8_t            missing_count;
 };

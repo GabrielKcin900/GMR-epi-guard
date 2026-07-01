@@ -39,9 +39,6 @@ static const struct person_rule people[] = {
 	},
 };
 
-static const char *default_required[] = { "Capacete", "Óculos", "Cinto" };
-static const uint8_t default_required_count = 3;
-
 static bool item_present(const struct verify_request *req, const char *name)
 {
 	return epi_item_in_list(name, req->items, req->item_count);
@@ -66,8 +63,9 @@ static void fill_missing(const struct verify_request *req,
 
 int api_check(const struct verify_request *req, struct verify_result *out)
 {
-	const char *const *required = default_required;
-	uint8_t required_count = default_required_count;
+	const char *const *required = NULL;
+	uint8_t required_count = 0;
+	bool found = false;
 
 	if (req == NULL || out == NULL) {
 		return -EINVAL;
@@ -75,14 +73,22 @@ int api_check(const struct verify_request *req, struct verify_result *out)
 
 	out->status = VERIFY_OK;
 	out->allowed = false;
+	out->unknown_person = false;
 	out->missing_count = 0;
 
 	for (size_t i = 0; i < ARRAY_SIZE(people); i++) {
 		if (strcmp(req->who, people[i].name) == 0) {
 			required = people[i].required;
 			required_count = people[i].required_count;
+			found = true;
 			break;
 		}
+	}
+
+	if (!found) {
+		out->unknown_person = true;
+		LOG_INF("mock check %s: nao cadastrado", req->who);
+		return 0;
 	}
 
 	fill_missing(req, required, required_count, out);

@@ -103,6 +103,10 @@ static int cmd_epi_last(const struct shell *sh, size_t argc, char **argv)
 	shell_print(sh, "allowed=%s status=%s", res.allowed ? "true" : "false",
 		    res.status == VERIFY_OK ? "ok" : "error");
 
+	if (res.unknown_person) {
+		shell_print(sh, "unknown_person=true (nao cadastrado na base)");
+	}
+
 	if (res.missing_count > 0) {
 		shell_print(sh, "missing:");
 		for (uint8_t i = 0; i < res.missing_count; i++) {

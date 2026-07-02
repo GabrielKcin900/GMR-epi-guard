@@ -15,4 +15,15 @@ target_sources(app PRIVATE
 	src/epi_state.c
 	src/epi_names.c
 	src/epi_shell.c
+	src/epi_config.c
 )
+
+if(CONFIG_SETTINGS)
+	target_sources(app PRIVATE src/epi_settings.c)
+endif()
+
+if(CONFIG_EPI_API_USE_MOCK)
+	target_sources(app PRIVATE src/api_client_mock.c)
+else()
+	target_sources(app PRIVATE src/api_client_http.c src/json_codec.c)
+endif()

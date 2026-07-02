@@ -1,0 +1,10 @@
+mainmenu "EPI Guard"
+
+source "Kconfig.zephyr"
+
+config EPI_API_USE_MOCK
+	bool "Usar mock local da API (sem rede)"
+	default y
+	help
+	  Quando ativo, api_check() usa logica embutida (M1/M2).
+	  Desative para cliente HTTP real (M3) — requer WiFi (M4) no hardware.

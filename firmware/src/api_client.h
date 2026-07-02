@@ -8,10 +8,9 @@
 #include "zbus_channels.h"
 
 /**
- * Consulta regras de EPI (M1: mock local espelhando db.json do plano).
- * M3 substituirá por HTTP client real.
+ * Consulta regras de EPI via mock local ou HTTP (api/db.json + POST /check).
  *
- * @return 0 em sucesso, código negativo em falha.
+ * @return 0 em sucesso, código negativo em falha de rede/parse.
  */
 int api_check(const struct verify_request *req, struct verify_result *out);
 

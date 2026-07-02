@@ -1,0 +1,7 @@
+{
+  "people": {
+    "Gabriel": ["Capacete", "Óculos", "Cinto", "Bota"],
+    "Ana": ["Capacete", "Luva"],
+    "Joao": ["Capacete", "Óculos", "Protetor auricular"]
+  }
+}

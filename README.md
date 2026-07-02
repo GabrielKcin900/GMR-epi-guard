@@ -8,7 +8,7 @@ Projeto da disciplina de Sistemas Embarcados (Zephyr RTOS + ESP32).
 
 ## Quickstart
 
-### Firmware (M1)
+### Firmware (M3 — mock local, padrao)
 
 ```powershell
 cd C:\Users\gabri\Documents\projeto_embarcados\zephyrproject
@@ -16,12 +16,65 @@ cd C:\Users\gabri\Documents\projeto_embarcados\zephyrproject
 
 west build -b doit_esp32_devkit_v1/esp32/procpu -p always epi-guard/firmware -d epi-guard/firmware/build
 west flash -d epi-guard/firmware/build
+```
 
-# Monitor: entre em epi-guard/firmware/build antes (west espressif não usa -d como build dir)
+Build padrao usa **mock local** (`CONFIG_EPI_API_USE_MOCK=y`) — funciona sem rede.
+
+### Firmware (M4 — WiFi + settings + HTTP)
+
+Requer blobs Espressif (uma vez):
+
+```powershell
+west blobs fetch hal_espressif
+```
+
+Build completo:
+
+```powershell
+west build -b doit_esp32_devkit_v1/esp32/procpu -p always epi-guard/firmware -d epi-guard/firmware/build-m4 -- "-DCONF_FILE=prj.conf;prj_m3.conf;prj_m4.conf"
+west flash -d epi-guard/firmware/build-m4
+```
+
+No PuTTY (substitua SSID, senha e IP do notebook):
+
+```
+uart:~$ epi wifi MinhaRede minha_senha
+uart:~$ epi api http://192.168.0.10:3000
+uart:~$ epi status
+uart:~$ epi verify Gabriel Capacete,Oculos,Cinto,Bota
+```
+
+Credenciais e URL **persistem apos reboot** (NVS). `epi net` reconecta o WiFi.
+
+### Firmware (M3 — cliente HTTP, sem WiFi)
+
+```powershell
+west build -b doit_esp32_devkit_v1/esp32/procpu -p always epi-guard/firmware -d epi-guard/firmware/build-m3 -- "-DCONF_FILE=prj.conf;prj_m3.conf"
+west flash -d epi-guard/firmware/build-m3
+```
+
+Somente compila o cliente HTTP; teste na placa ainda requer o build M4 acima.
+
+### API Express (notebook)
+
+```powershell
+cd epi-guard/api
+npm install
+npm start
+```
+
+Teste com curl:
+
+```powershell
+curl -X POST http://localhost:3000/check -H "Content-Type: application/json" -d "{\"who\":\"Gabriel\",\"with\":[\"Capacete\",\"Oculos\",\"Cinto\",\"Bota\"]}"
+```
+
+Pessoa nao cadastrada retorna `"unknown": true`.
+
+```powershell
+# Monitor (opcional)
 cd epi-guard/firmware/build
 west espressif monitor -p COM3
-# Se ainda aparecer lixo, confira no flash se esptool mostra "Crystal frequency: 26MHz"
-# (overlay boards/doit_esp32_26mhz.overlay corrige isso)
 # Sair do monitor: Ctrl+[
 cd ../../..
 ```

@@ -6,12 +6,20 @@
 #include "epi_state.h"
 #include "zbus_channels.h"
 
+#if !IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
+#include "api_client.h"
+#endif
+
 #if IS_ENABLED(CONFIG_SETTINGS)
 #include "epi_settings.h"
 #endif
 
 #if IS_ENABLED(CONFIG_WIFI)
 #include "net.h"
+#endif
+
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+#include "net_http.h"
 #endif
 
 #include <stdlib.h>
@@ -24,8 +32,6 @@
 #if IS_ENABLED(CONFIG_WIFI)
 #include <zephyr/net/net_ip.h>
 #endif
-
-static uint32_t next_req_id = 1;
 
 static int parse_epi_list(char *list, struct verify_request *req)
 {
@@ -57,12 +63,12 @@ static int cmd_epi_verify(const struct shell *sh, size_t argc, char **argv)
 
 	if (argc < 3) {
 		shell_error(sh, "uso: epi verify <who> <epi1,epi2,...>");
-		shell_print(sh, "dica: use ASCII (Oculos, nao Óculos) no monitor serial");
+		shell_print(sh, "dica: use ASCII nos EPIs (Oculos, nao acentos)");
 		return -EINVAL;
 	}
 
 	memset(&req, 0, sizeof(req));
-	req.req_id = next_req_id++;
+	req.req_id = epi_state_alloc_req_id();
 	strncpy(req.who, argv[1], EPI_WHO_LEN - 1);
 
 	strncpy(list_buf, argv[2], sizeof(list_buf) - 1);
@@ -75,8 +81,7 @@ static int cmd_epi_verify(const struct shell *sh, size_t argc, char **argv)
 		return err;
 	}
 
-	shell_print(sh, "pedido %u enfileirado para '%s' (%u EPIs)", req.req_id, req.who,
-		    req.item_count);
+	shell_print(sh, "req %u -> %s (%u itens)", req.req_id, req.who, req.item_count);
 	return 0;
 }
 
@@ -93,6 +98,25 @@ static int cmd_epi_api(const struct shell *sh, size_t argc, char **argv)
 	shell_print(sh, "API URL salva: %s", argv[1]);
 	return 0;
 }
+
+#if !IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
+static int cmd_epi_ping_api(const struct shell *sh, size_t argc, char **argv)
+{
+	int err;
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	err = api_ping();
+	if (err == 0) {
+		shell_print(sh, "API alcancavel (TCP OK)");
+		return 0;
+	}
+
+	shell_error(sh, "API inalcancavel: %d (verifique firewall/IP)", err);
+	return err;
+}
+#endif
 
 #if IS_ENABLED(CONFIG_WIFI)
 static const char *wifi_state_str(enum epi_wifi_state state)
@@ -132,7 +156,7 @@ static int cmd_epi_wifi(const struct shell *sh, size_t argc, char **argv)
 		return err;
 	}
 
-	shell_print(sh, "WiFi salvo para '%s' — reconectando...", argv[1]);
+	shell_print(sh, "WiFi salvo para '%s' - reconectando...", argv[1]);
 	err = epi_net_reconnect();
 	if (err < 0) {
 		shell_error(sh, "falha ao conectar: %d", err);
@@ -175,13 +199,13 @@ static int cmd_epi_status(const struct shell *sh, size_t argc, char **argv)
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	shell_print(sh, "EPI Guard M4");
+	shell_print(sh, "EPI Guard M5");
 
 #if IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
 	shell_print(sh, "API: mock local");
 #else
 	shell_print(sh, "API: HTTP client");
-	shell_print(sh, "URL: %s", epi_config_api_ready() ? url : "(nao configurada — epi api <url>)");
+	shell_print(sh, "URL: %s", epi_config_api_ready() ? url : "(nao configurada - epi api <url>)");
 #endif
 
 #if IS_ENABLED(CONFIG_WIFI)
@@ -192,6 +216,14 @@ static int cmd_epi_status(const struct shell *sh, size_t argc, char **argv)
 		shell_print(sh, "WiFi: %s", wifi_state_str(state));
 		if (epi_net_get_ipv4_str(ip, sizeof(ip)) == 0) {
 			shell_print(sh, "IP: %s", ip);
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+			if (epi_http_is_running()) {
+				shell_print(sh, "HTTP: ativo — Dashboard: http://%s/", ip);
+				shell_print(sh, "Teste rapido: curl http://%s/ping", ip);
+			} else {
+				shell_print(sh, "HTTP: aguardando rede (epi net ou aguarde DHCP)");
+			}
+#endif
 		}
 	}
 #endif
@@ -253,15 +285,55 @@ static int cmd_epi_last(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+static int cmd_epi_http(const struct shell *sh, size_t argc, char **argv)
+{
+	char ip[NET_IPV4_ADDR_LEN];
+	int err;
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (epi_http_is_running()) {
+		if (epi_net_get_ipv4_str(ip, sizeof(ip)) == 0) {
+			shell_print(sh, "HTTP ativo: http://%s/", ip);
+		} else {
+			shell_print(sh, "HTTP ativo");
+		}
+		return 0;
+	}
+
+	err = epi_http_server_try_start();
+	if (err == 0) {
+		epi_net_get_ipv4_str(ip, sizeof(ip));
+		shell_print(sh, "HTTP iniciado: http://%s/", ip);
+		return 0;
+	}
+	if (err == -EAGAIN) {
+		shell_warn(sh, "sem IPv4 ainda — aguarde DHCP ou epi net");
+		return 0;
+	}
+
+	shell_error(sh, "falha ao iniciar HTTP: %d", err);
+	return err;
+}
+#endif
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_epi,
 			       SHELL_CMD(verify, NULL,
 					 "Injeta verificacao: epi verify <who> <epi1,epi2,...>",
 					 cmd_epi_verify),
 			       SHELL_CMD(api, NULL, "URL da API: epi api [http://IP:3000]",
 					 cmd_epi_api),
+#if !IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
+			       SHELL_CMD(ping-api, NULL, "Testa TCP ate a API", cmd_epi_ping_api),
+#endif
 			       SHELL_CMD(wifi, NULL, "WiFi: epi wifi <ssid> <psk>",
 					 cmd_epi_wifi),
 			       SHELL_CMD(net, NULL, "Reconecta WiFi", cmd_epi_net),
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+			       SHELL_CMD(http, NULL, "Inicia/verifica servidor HTTP", cmd_epi_http),
+#endif
 			       SHELL_CMD(status, NULL, "Estado do sistema", cmd_epi_status),
 			       SHELL_CMD(last, NULL, "Ultima verificacao", cmd_epi_last),
 			       SHELL_SUBCMD_SET_END);

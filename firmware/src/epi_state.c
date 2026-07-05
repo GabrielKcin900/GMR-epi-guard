@@ -10,6 +10,7 @@ static struct verify_request last_request;
 static struct verify_result last_result;
 static bool has_result;
 static struct k_mutex state_lock;
+static uint32_t next_req_id = 1;
 
 static int epi_state_init(void)
 {
@@ -73,4 +74,15 @@ bool epi_state_has_result(void)
 	k_mutex_unlock(&state_lock);
 
 	return value;
+}
+
+uint32_t epi_state_alloc_req_id(void)
+{
+	uint32_t id;
+
+	k_mutex_lock(&state_lock, K_FOREVER);
+	id = next_req_id++;
+	k_mutex_unlock(&state_lock);
+
+	return id;
 }

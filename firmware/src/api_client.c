@@ -24,3 +24,12 @@ int api_check(const struct verify_request *req, struct verify_result *out)
 	return api_check_http(req, out);
 #endif
 }
+
+int api_ping(void)
+{
+#if IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
+	return 0;
+#else
+	return api_ping_http();
+#endif
+}

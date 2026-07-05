@@ -161,7 +161,7 @@ static void log_missing(const struct verify_result *res)
 
 static void run_allowed(void)
 {
-	LOG_INF("LIBERADO — bip curto, LED fixo ~3 s");
+	LOG_INF("LIBERADO - bip curto, LED fixo ~3 s");
 	beep_ms(120);
 	led_on();
 	k_msleep(3000);
@@ -170,7 +170,7 @@ static void run_allowed(void)
 
 static void run_denied(const struct verify_result *res)
 {
-	LOG_INF("NEGADO — bip longo, LED piscando ~3 s");
+	LOG_INF("NEGADO - bip longo, LED piscando ~3 s");
 	log_missing(res);
 
 	beep_ms(900);
@@ -185,7 +185,7 @@ static void run_denied(const struct verify_result *res)
 
 static void run_unknown(void)
 {
-	LOG_INF("NAO CADASTRADO — LED azul piscando, buzzer continuo (pressione BOOT para parar)");
+	LOG_INF("NAO CADASTRADO - LED azul piscando, buzzer continuo (pressione BOOT para parar)");
 
 	while (!button_pressed()) {
 		buzzer_on();
@@ -209,7 +209,7 @@ static void run_unknown(void)
 
 static void run_error(void)
 {
-	LOG_INF("ERRO — 3 bips curtos");
+	LOG_INF("ERRO - 3 bips curtos");
 
 	for (int i = 0; i < 3; i++) {
 		beep_ms(120);

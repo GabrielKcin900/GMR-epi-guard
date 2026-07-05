@@ -46,6 +46,47 @@ uart:~$ epi verify Gabriel Capacete,Oculos,Cinto,Bota
 
 Credenciais e URL **persistem apos reboot** (NVS). `epi net` reconecta o WiFi.
 
+### Firmware (M5 — servidor HTTP + dashboard)
+
+Build completo (WiFi + API + dashboard embutido no firmware):
+
+```powershell
+west build -b doit_esp32_devkit_v1/esp32/procpu -p always epi-guard/firmware -d epi-guard/firmware/build-m5 -- "-DCONF_FILE=prj.conf;prj_m3.conf;prj_m4.conf;prj_m5.conf"
+west flash -d epi-guard/firmware/build-m5
+```
+
+**Demo M5 (browser → firmware → API → atuadores):**
+
+1. Suba a API no notebook (`npm start` em `epi-guard/api`).
+2. Configure a placa (PuTTY COM3 115200):
+   ```
+   uart:~$ epi wifi MinhaRede minha_senha
+   uart:~$ epi api http://192.168.0.10:3000
+   uart:~$ epi status
+   ```
+   Anote o IP da placa (ex.: `192.168.0.42`). `epi status` mostra `Dashboard: http://<IP>/`.
+3. Abra no browser: `http://<IP_ESP32>/`
+4. Preencha **who** + EPIs (ASCII) e clique **Verificar**.
+
+Casos de teste (`api/db.json`):
+
+| Quem | EPIs marcados | Resultado esperado |
+|------|---------------|-------------------|
+| Gabriel | Capacete, Oculos, Cinto, Bota | LIBERADO (bip curto + LED) |
+| Gabriel | Capacete, Oculos, Cinto | NEGADO — falta Bota |
+| Desconhecido | qualquer | NAO CADASTRADO (alarme ate BOOT) |
+
+**Limitacao PoC:** um pedido HTTP por vez (503 se enviar outro antes do anterior terminar).
+
+Para editar o dashboard e reflashar:
+
+```powershell
+python epi-guard/firmware/scripts/embed_dashboard.py
+west build -b doit_esp32_devkit_v1/esp32/procpu epi-guard/firmware -d epi-guard/firmware/build-m5 -- "-DCONF_FILE=prj.conf;prj_m3.conf;prj_m4.conf;prj_m5.conf"
+```
+
+Fontes: `dashboard/index.html`, `dashboard/app.js`.
+
 ### Firmware (M3 — cliente HTTP, sem WiFi)
 
 ```powershell

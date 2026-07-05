@@ -125,13 +125,23 @@ static int tcp_connect_ipv4(const char *host, uint16_t port)
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock < 0) {
-		return -errno;
+		int err = errno;
+
+		if (err == ENOENT) {
+			LOG_ERR("socket(): sem contexto TCP livre (NET_MAX_CONN/CONTEXTS?)");
+		} else {
+			LOG_ERR("socket(): errno=%d", err);
+		}
+		return -err;
 	}
 
 	ret = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
 	if (ret < 0) {
+		int err = errno;
+
+		LOG_ERR("connect(%s:%u): errno=%d", host, port, err);
 		close(sock);
-		return -errno;
+		return -err;
 	}
 
 	return sock;
@@ -177,9 +187,10 @@ int api_check_http(const struct verify_request *req, struct verify_result *out)
 		return ret;
 	}
 
+	LOG_INF("POST /check -> %s:%u", host, port);
+
 	sock = tcp_connect_ipv4(host, port);
 	if (sock < 0) {
-		LOG_ERR("conexao TCP falhou: %d", sock);
 		return sock;
 	}
 
@@ -227,5 +238,34 @@ int api_check_http(const struct verify_request *req, struct verify_result *out)
 	LOG_INF("HTTP check %s: allowed=%d unknown=%d missing=%u", req->who, out->allowed,
 		out->unknown_person, out->missing_count);
 
+	return 0;
+}
+
+int api_ping_http(void)
+{
+	const char *url = epi_config_get_api_url();
+	char host[64];
+	uint16_t port;
+	int sock;
+	int ret;
+
+	if (!epi_config_api_ready()) {
+		LOG_ERR("URL da API nao configurada (epi api <url>)");
+		return -EINVAL;
+	}
+
+	ret = parse_api_url(url, host, sizeof(host), &port);
+	if (ret < 0) {
+		LOG_ERR("URL invalida: %s", url);
+		return ret;
+	}
+
+	sock = tcp_connect_ipv4(host, port);
+	if (sock < 0) {
+		return sock;
+	}
+
+	close(sock);
+	LOG_INF("ping-api OK: %s:%u", host, port);
 	return 0;
 }

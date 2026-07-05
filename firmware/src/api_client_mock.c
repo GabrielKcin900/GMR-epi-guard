@@ -5,6 +5,7 @@
 
 #include "api_client_internal.h"
 #include "epi_names.h"
+#include "epi_names.h"
 
 #include <errno.h>
 #include <string.h>
@@ -24,7 +25,7 @@ struct person_rule {
 static const struct person_rule people[] = {
 	{
 		.name = "Gabriel",
-		.required = { "Capacete", "Óculos", "Cinto", "Bota" },
+		.required = { "Capacete", "Oculos", "Cinto", "Bota" },
 		.required_count = 4,
 	},
 	{
@@ -34,7 +35,7 @@ static const struct person_rule people[] = {
 	},
 	{
 		.name = "Joao",
-		.required = { "Capacete", "Óculos", "Protetor auricular" },
+		.required = { "Capacete", "Oculos", "Protetor auricular" },
 		.required_count = 3,
 	},
 };
@@ -52,8 +53,7 @@ static void fill_missing(const struct verify_request *req,
 
 	for (uint8_t i = 0; i < required_count && out->missing_count < EPI_MAX_ITEMS; i++) {
 		if (!item_present(req, required[i])) {
-			strncpy(out->missing[out->missing_count], required[i], EPI_NAME_LEN - 1);
-			out->missing[out->missing_count][EPI_NAME_LEN - 1] = '\0';
+			epi_name_to_ascii(required[i], out->missing[out->missing_count], EPI_NAME_LEN);
 			out->missing_count++;
 		}
 	}

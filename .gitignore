@@ -1,6 +1,12 @@
-# --- Zephyr / firmware ---
+# --- Zephyr / firmware (artefatos de build) ---
+# west build -d firmware/build  ou  firmware/build-m3|m4|m5
 firmware/build/
-**/build/
+firmware/build-*/
+
+# Cache west/cmake dentro do app
+firmware/.cache/
+
+# Binarios e objetos (caso escapem do diretorio de build)
 *.elf
 *.bin
 *.map
@@ -8,16 +14,22 @@ firmware/build/
 *.uf2
 *.lst
 *.o
+*.obj
 *.a
+*.d
 
 # Twister / test artifacts
 twister-out/
 twister.log
 
+# Gerado por firmware/scripts/embed_dashboard.py (fonte: dashboard/)
+firmware/src/dashboard_embed.c
+
 # --- Node.js (api/) ---
-api/node_modules/
+node_modules/
 npm-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # --- Python ---
 __pycache__/
@@ -26,18 +38,23 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # --- IDE / editor ---
 .vscode/
 .idea/
+.cursor/
 *.swp
 *~
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # --- Secrets / ambiente local ---
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 secrets.json

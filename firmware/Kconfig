@@ -8,3 +8,11 @@ config EPI_API_USE_MOCK
 	help
 	  Quando ativo, api_check() usa logica embutida (M1/M2).
 	  Desative para cliente HTTP real (M3) — requer WiFi (M4) no hardware.
+
+config EPI_HTTP_SERVER
+	bool "Servidor HTTP dashboard (sockets TCP)"
+	default n
+	depends on NETWORKING && NET_TCP && NET_SOCKETS
+	help
+	  Servidor HTTP simples em :80 para dashboard e POST /verify.
+	  Usa sockets POSIX (mais estavel que CONFIG_HTTP_SERVER no ESP32).

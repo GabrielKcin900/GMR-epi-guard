@@ -14,4 +14,7 @@
  */
 int api_check(const struct verify_request *req, struct verify_result *out);
 
+/** Teste TCP ate a URL configurada (epi api). */
+int api_ping(void);
+
 #endif /* EPI_API_CLIENT_H_ */

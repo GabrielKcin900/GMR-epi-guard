@@ -10,6 +10,10 @@
 #include "epi_settings.h"
 #endif
 
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+#include "net_http.h"
+#endif
+
 LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 int main(void)
@@ -29,7 +33,7 @@ int main(void)
 	}
 #endif
 
-	LOG_INF("EPI Guard firmware — marco M4");
+	LOG_INF("EPI Guard firmware - marco M5");
 #if IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
 	LOG_INF("API: mock local (epi verify sem rede)");
 #else
@@ -38,7 +42,11 @@ int main(void)
 #if IS_ENABLED(CONFIG_WIFI)
 	LOG_INF("WiFi: epi wifi <ssid> <psk> | epi net");
 #endif
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+	LOG_INF("Dashboard: sobe apos WiFi/DHCP (epi status)");
+#else
 	LOG_INF("Teste: epi verify Gabriel Capacete,Oculos,Cinto,Bota");
+#endif
 
 	return 0;
 }

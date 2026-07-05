@@ -17,55 +17,104 @@ struct epi_alias {
 };
 
 static const struct epi_alias aliases[] = {
-	{ "Óculos", "Oculos" },
+	{ "Oculos", "Oculos" },
 };
 
-static int ascii_fold(char c)
+static size_t utf8_fold_char(const char *in, char *out)
 {
-	switch (c) {
-	case 'ó':
-	case 'Ó':
-		return 'o';
-	case 'á':
-	case 'Á':
-		return 'a';
-	case 'ã':
-	case 'Ã':
-		return 'a';
-	case 'ç':
-	case 'Ç':
-		return 'c';
-	case 'é':
-	case 'É':
-		return 'e';
-	case 'í':
-	case 'Í':
-		return 'i';
-	case 'ú':
-	case 'Ú':
-		return 'u';
-	default:
-		return c;
+	unsigned char b = (unsigned char)in[0];
+
+	if (b < 0x80) {
+		*out = in[0];
+		return 1;
 	}
+
+	if ((b & 0xE0) == 0xC0 && in[1] != '\0') {
+		unsigned char b2 = (unsigned char)in[1];
+
+		if (b == 0xC3) {
+			switch (b2) {
+			case 0xA1:
+			case 0xA0:
+			case 0xA2:
+			case 0xA3:
+				*out = 'a';
+				break;
+			case 0xA7:
+				*out = 'c';
+				break;
+			case 0xA9:
+			case 0xA8:
+				*out = 'e';
+				break;
+			case 0xAD:
+			case 0xAC:
+				*out = 'i';
+				break;
+			case 0xB3:
+			case 0xB2:
+			case 0xB5:
+				*out = 'o';
+				break;
+			case 0xBA:
+			case 0xB9:
+				*out = 'u';
+				break;
+			case 0x81:
+				*out = 'A';
+				break;
+			case 0x87:
+				*out = 'C';
+				break;
+			case 0x89:
+				*out = 'E';
+				break;
+			case 0x8D:
+				*out = 'I';
+				break;
+			case 0x93:
+				*out = 'O';
+				break;
+			case 0x9A:
+				*out = 'U';
+				break;
+			default:
+				*out = '?';
+				break;
+			}
+			return 2;
+		}
+	}
+
+	*out = '?';
+	return 1;
+}
+
+void epi_name_to_ascii(const char *in, char *out, size_t out_len)
+{
+	size_t oi = 0;
+	size_t consumed;
+
+	if (in == NULL || out == NULL || out_len == 0) {
+		return;
+	}
+
+	for (size_t i = 0; in[i] != '\0' && oi < out_len - 1; i += consumed) {
+		char c;
+
+		consumed = utf8_fold_char(&in[i], &c);
+		if (c == '_') {
+			c = ' ';
+		}
+		out[oi++] = c;
+	}
+
+	out[oi] = '\0';
 }
 
 static void normalize_epi_name(const char *in, char *out, size_t out_len)
 {
-	size_t i;
-
-	if (out_len == 0) {
-		return;
-	}
-
-	for (i = 0; in[i] != '\0' && i < out_len - 1; i++) {
-		char c = in[i];
-
-		if (c == '_') {
-			c = ' ';
-		}
-		out[i] = (char)ascii_fold(c);
-	}
-	out[i] = '\0';
+	epi_name_to_ascii(in, out, out_len);
 }
 
 static bool normalized_equal(const char *a, const char *b)

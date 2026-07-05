@@ -53,4 +53,4 @@ static void validator_thread(void)
 	}
 }
 
-K_THREAD_DEFINE(validator_thread_id, 2048, validator_thread, NULL, NULL, NULL, 5, 0, 0);
+K_THREAD_DEFINE(validator_thread_id, 4096, validator_thread, NULL, NULL, NULL, 5, 0, 0);

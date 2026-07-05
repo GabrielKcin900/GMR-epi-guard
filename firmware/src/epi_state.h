@@ -15,4 +15,7 @@ void epi_state_get_last_result(struct verify_result *res);
 
 bool epi_state_has_result(void);
 
+/** Proximo req_id unico (shell, HTTP /verify). */
+uint32_t epi_state_alloc_req_id(void);
+
 #endif /* EPI_STATE_H_ */

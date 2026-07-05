@@ -9393,8 +9393,8 @@ events:
     checks:
       - "Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS"
     directories:
-      source: "C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-0ic5t7"
-      binary: "C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-0ic5t7"
+      source: "C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-t0mpo1"
+      binary: "C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-t0mpo1"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: ""
@@ -9405,11 +9405,11 @@ events:
       variable: "C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-0ic5t7'
+        Change Dir: 'C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-t0mpo1'
         
-        Run Build Command(s): C:/Users/gabri/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/ninja.exe -v cmTC_bb620
-        [1/2] C:\\Users\\gabri\\zephyr-sdk-1.0.1\\gnu\\xtensa-espressif_esp32_zephyr-elf\\bin\\xtensa-espressif_esp32_zephyr-elf-gcc.exe -DC_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS  -nostartfiles -nostdlib -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -Wl,--unresolved-symbols=ignore-in-object-files -Wl,--entry=0 -fuse-ld=bfd -std=c99   -Wformat-signedness -o CMakeFiles/cmTC_bb620.dir/src.c.obj -c C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-0ic5t7/src.c
-        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Users\\gabri\\zephyr-sdk-1.0.1\\gnu\\xtensa-espressif_esp32_zephyr-elf\\bin\\xtensa-espressif_esp32_zephyr-elf-gcc.exe -nostartfiles -nostdlib -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -Wl,--unresolved-symbols=ignore-in-object-files -Wl,--entry=0 -fuse-ld=bfd  CMakeFiles/cmTC_bb620.dir/src.c.obj -o cmTC_bb620   && cd ."
+        Run Build Command(s): C:/Users/gabri/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/ninja.exe -v cmTC_c3f5a
+        [1/2] C:\\Users\\gabri\\zephyr-sdk-1.0.1\\gnu\\xtensa-espressif_esp32_zephyr-elf\\bin\\xtensa-espressif_esp32_zephyr-elf-gcc.exe -DC_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS  -nostartfiles -nostdlib -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -Wl,--unresolved-symbols=ignore-in-object-files -Wl,--entry=0 -fuse-ld=bfd -std=c99   -Wformat-signedness -o CMakeFiles/cmTC_c3f5a.dir/src.c.obj -c C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/epi-guard/firmware/build-m4/CMakeFiles/CMakeScratch/TryCompile-t0mpo1/src.c
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Users\\gabri\\zephyr-sdk-1.0.1\\gnu\\xtensa-espressif_esp32_zephyr-elf\\bin\\xtensa-espressif_esp32_zephyr-elf-gcc.exe -nostartfiles -nostdlib -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -isystem "C:/Users/gabri/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32_zephyr-elf/bin/../lib/gcc/xtensa-espressif_esp32_zephyr-elf/14.3.0/include" -Wl,--unresolved-symbols=ignore-in-object-files -Wl,--entry=0 -fuse-ld=bfd  CMakeFiles/cmTC_c3f5a.dir/src.c.obj -o cmTC_c3f5a   && cd ."
         
       exitCode: 0
   -

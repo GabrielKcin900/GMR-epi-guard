@@ -4,6 +4,7 @@
  */
 
 #include "net.h"
+#include "net_http.h"
 #include "zbus_channels.h"
 
 #include <errno.h>
@@ -36,6 +37,25 @@ static enum epi_wifi_state wifi_state = EPI_WIFI_DISCONNECTED;
 static struct net_mgmt_event_callback wifi_mgmt_cb;
 static struct k_mutex net_lock;
 
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+static void http_start_retry_fn(struct k_work *work)
+{
+	struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+
+	if (epi_http_is_running()) {
+		return;
+	}
+
+	if (epi_http_server_try_start() == 0) {
+		return;
+	}
+
+	(void)k_work_schedule(dwork, K_SECONDS(2));
+}
+
+static K_WORK_DELAYABLE_DEFINE(http_start_retry, http_start_retry_fn);
+#endif
+
 static void set_wifi_state(enum epi_wifi_state state)
 {
 	k_mutex_lock(&net_lock, K_FOREVER);
@@ -46,12 +66,26 @@ static void set_wifi_state(enum epi_wifi_state state)
 enum epi_wifi_state epi_net_wifi_state(void)
 {
 	enum epi_wifi_state state;
+	char ip[NET_IPV4_ADDR_LEN];
 
 	k_mutex_lock(&net_lock, K_FOREVER);
 	state = wifi_state;
 	k_mutex_unlock(&net_lock);
 
+	if (state == EPI_WIFI_CONNECTING && epi_net_get_ipv4_str(ip, sizeof(ip)) == 0 &&
+	    ip[0] != '\0') {
+		return EPI_WIFI_CONNECTED;
+	}
+
 	return state;
+}
+
+static void on_network_ready(void)
+{
+	set_wifi_state(EPI_WIFI_CONNECTED);
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+	(void)epi_http_server_try_start();
+#endif
 }
 
 static void wifi_event_handler(struct net_mgmt_event_callback *cb, uint64_t mgmt_event,
@@ -66,14 +100,21 @@ static void wifi_event_handler(struct net_mgmt_event_callback *cb, uint64_t mgmt
 			LOG_ERR("WiFi connect failed (%d)", status->status);
 			set_wifi_state(EPI_WIFI_DISCONNECTED);
 		} else {
-			LOG_INF("WiFi associado — aguardando DHCP");
+			LOG_INF("WiFi associado - aguardando DHCP");
 		}
 		return;
 	}
 
-	if (mgmt_event == NET_EVENT_IPV4_ADDR_ADD) {
-		LOG_INF("IPv4 obtido (DHCP)");
-		set_wifi_state(EPI_WIFI_CONNECTED);
+	if (mgmt_event == NET_EVENT_IPV4_ADDR_ADD || mgmt_event == NET_EVENT_IPV4_DHCP_BOUND ||
+	    mgmt_event == NET_EVENT_L4_CONNECTED) {
+		if (mgmt_event == NET_EVENT_IPV4_ADDR_ADD) {
+			LOG_INF("IPv4 obtido (DHCP)");
+		} else if (mgmt_event == NET_EVENT_IPV4_DHCP_BOUND) {
+			LOG_INF("DHCP bound");
+		} else {
+			LOG_INF("rede pronta (L4 connected)");
+		}
+		on_network_ready();
 	}
 }
 
@@ -184,8 +225,10 @@ int epi_net_get_ipv4_str(char *buf, size_t len)
 static void net_wifi_init(void)
 {
 	k_mutex_init(&net_lock);
-	net_mgmt_init_event_callback(&wifi_mgmt_cb, wifi_event_handler,
-				     NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_IPV4_ADDR_ADD);
+	net_mgmt_init_event_callback(
+		&wifi_mgmt_cb, wifi_event_handler,
+		NET_EVENT_WIFI_CONNECT_RESULT | NET_EVENT_IPV4_ADDR_ADD |
+			NET_EVENT_IPV4_DHCP_BOUND | NET_EVENT_L4_CONNECTED);
 	net_mgmt_add_event_callback(&wifi_mgmt_cb);
 }
 
@@ -228,9 +271,18 @@ static void net_thread(void)
 		(void)epi_net_connect();
 	}
 #endif
-	LOG_INF("net thread started (WiFi + zbus)");
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+	epi_http_init();
+	(void)epi_http_server_try_start();
+	(void)k_work_schedule(&http_start_retry, K_SECONDS(2));
+#endif
+#if IS_ENABLED(CONFIG_EPI_HTTP_SERVER)
+	LOG_INF("net thread started (WiFi + HTTP + zbus)");
 #else
-	LOG_INF("net thread started (zbus — sem WiFi)");
+	LOG_INF("net thread started (WiFi + zbus)");
+#endif
+#else
+	LOG_INF("net thread started (zbus - sem WiFi)");
 #endif
 
 	while (!zbus_sub_wait(&net_sub, &chan, K_FOREVER)) {
@@ -244,19 +296,20 @@ static void net_thread(void)
 			continue;
 		}
 
+		epi_http_on_verify_result(&res);
+
 		if (res.status != VERIFY_OK) {
-			LOG_INF("[net] responderia ao dashboard: status=error req_id=%u", res.req_id);
+			LOG_INF("[net] dashboard: status=error req_id=%u", res.req_id);
 			continue;
 		}
 
 		if (res.unknown_person) {
-			LOG_INF("[net] responderia ao dashboard: unknown_person req_id=%u",
-				res.req_id);
+			LOG_INF("[net] dashboard: unknown_person req_id=%u", res.req_id);
 		} else {
-			LOG_INF("[net] responderia ao dashboard: allowed=%d req_id=%u missing=%u",
-				res.allowed, res.req_id, res.missing_count);
+			LOG_INF("[net] dashboard: allowed=%d req_id=%u missing=%u", res.allowed,
+				res.req_id, res.missing_count);
 		}
 	}
 }
 
-K_THREAD_DEFINE(net_thread_id, 3072, net_thread, NULL, NULL, NULL, 6, 0, 0);
+K_THREAD_DEFINE(net_thread_id, 4096, net_thread, NULL, NULL, NULL, 6, 0, 0);

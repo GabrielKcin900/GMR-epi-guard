@@ -1,0 +1,5 @@
+tests:
+  epi.api_mock:
+    tags: epi api
+    integration_platforms:
+      - native_sim

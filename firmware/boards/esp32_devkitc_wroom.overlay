@@ -1,9 +1,0 @@
-/*
- * Referencia generica do plano (§5.6) para esp32_devkitc_wroom.
- *
- * Placa DOIT usada no projeto: boards/doit_esp32_26mhz.overlay
- * (CMakeLists.txt aponta DTC_OVERLAY_FILE para esse arquivo).
- *
- * Para montar LED vermelho opcional (led-deny), habilite o no em doit_esp32_26mhz.overlay:
- *   status = "okay";  no nó led_deny (GPIO4 / D4).
- */

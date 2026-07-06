@@ -40,12 +40,22 @@ jobs:
           west update
           pip install -r scripts/requirements-base.txt \
                       -r scripts/requirements-build-test.txt \
-                      natsort tabulate
+                      natsort tabulate gcovr
 
-      - name: Twister native_sim
+      - name: Twister native_sim (+ cobertura)
         working-directory: zephyr
         env:
           ZEPHYR_TOOLCHAIN_VARIANT: host
         run: |
           source zephyr-env.sh
-          west twister -T ../epi-guard/firmware/tests -p native_sim --inline-logs
+          west twister -T ../epi-guard/firmware/tests -p native_sim --inline-logs \
+            --coverage --coverage-tool gcovr \
+            --coverage-basedir ../epi-guard/firmware/src
+
+      - name: Publica relatorio de cobertura (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: zephyr/twister-out/coverage/
+          if-no-files-found: warn

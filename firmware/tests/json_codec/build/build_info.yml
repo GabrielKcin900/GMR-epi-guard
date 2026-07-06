@@ -1,0 +1,5 @@
+west:
+  command: C:\Users\gabri\Documents\projeto_embarcados\zephyrproject\.venv\Scripts\west
+    build -b native_sim -p always epi-guard/firmware/tests/json_codec -d epi-guard/firmware/tests/json_codec/build
+  topdir: C:\Users\gabri\Documents\projeto_embarcados\zephyrproject
+  version: 1.5.0

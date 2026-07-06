@@ -5,7 +5,6 @@
 
 #include "api_client_internal.h"
 #include "epi_names.h"
-#include "epi_names.h"
 
 #include <errno.h>
 #include <string.h>
@@ -14,7 +13,11 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
+#if IS_ENABLED(CONFIG_ZTEST)
+LOG_MODULE_REGISTER(api_client, LOG_LEVEL_INF);
+#else
 LOG_MODULE_DECLARE(api_client);
+#endif
 
 struct person_rule {
 	const char *name;

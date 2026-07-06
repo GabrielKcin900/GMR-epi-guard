@@ -78,6 +78,83 @@ Casos de teste (`api/db.json`):
 
 **Limitacao PoC:** um pedido HTTP por vez (503 se enviar outro antes do anterior terminar).
 
+### Firmware (M6 — testes ZTEST + Twister)
+
+Tres suites unitarias em `firmware/tests/` (rodam em `native_sim`, sem hardware):
+
+| Suite | Cobertura |
+|-------|-----------|
+| `json_codec` | parse/serialize JSON (pedido, resposta API, resposta dashboard) |
+| `validation` | resultado → padrao de feedback (liberado / negado / erro / desconhecido) |
+| `zbus_flow` | `chan_verify_request` → mock API → `chan_verify_result` |
+
+#### WSL (recomendado no Windows)
+
+O `.venv` do Windows **nao funciona** no WSL. Tambem **nao** use `sudo apt install west` — falta `natsort` e outras deps do Zephyr.
+
+O setup instala apenas deps **minimas** para Twister (`scripts/requirements-twister.txt`), nao o `requirements.txt` completo do Zephyr (evita `hidapi`/`spsdk`).
+
+Setup **uma vez** no WSL:
+
+```bash
+cd /mnt/c/Users/gabri/Documents/projeto_embarcados/zephyrproject
+bash epi-guard/scripts/setup-wsl-tests.sh
+```
+
+Se o venv anterior falhou no meio, apague e rode de novo: `rm -rf .venv-wsl`
+
+Se aparecer `$'\r': command not found`, converta finais de linha: `sed -i 's/\r$//' epi-guard/scripts/*.sh`
+
+Rodar testes:
+
+```bash
+cd /mnt/c/Users/gabri/Documents/projeto_embarcados/zephyrproject
+bash epi-guard/scripts/run-twister-wsl.sh
+```
+
+Ou manualmente em cada sessao:
+
+```bash
+cd /mnt/c/Users/gabri/Documents/projeto_embarcados/zephyrproject
+source .venv-wsl/bin/activate
+source zephyr/zephyr-env.sh
+west twister -T epi-guard/firmware/tests -p native_sim --inline-logs
+```
+
+#### Linux / PowerShell (Windows nativo)
+
+No Windows puro, o Twister filtra `native_sim` sem `gcc` no PATH — prefira WSL.
+
+```powershell
+cd C:\Users\gabri\Documents\projeto_embarcados\zephyrproject
+.\.venv\Scripts\Activate.ps1
+west twister -T epi-guard/firmware/tests -p native_sim --inline-logs
+```
+
+Build individual de uma suite:
+
+```powershell
+west build -b native_sim -p always epi-guard/firmware/tests/json_codec -d epi-guard/firmware/tests/json_codec/build
+```
+
+Formatacao (usa o `.clang-format` do Zephyr):
+
+```powershell
+# a partir da raiz zephyrproject, com clang-format no PATH:
+Get-ChildItem -Recurse epi-guard/firmware/src, epi-guard/firmware/tests -Include *.c,*.h |
+  ForEach-Object { clang-format -i $_.FullName }
+```
+
+Checkpatch (Linux/WSL):
+
+```bash
+zephyr/scripts/checkpatch.pl --no-tree -f epi-guard/firmware/src/json_codec.c
+```
+
+### Demo completa (M5 + M6)
+
+Roteiro para apresentacao: [docs/APRESENTACAO.md](docs/APRESENTACAO.md)
+
 Para editar o dashboard e reflashar:
 
 ```powershell

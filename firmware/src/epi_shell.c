@@ -199,7 +199,7 @@ static int cmd_epi_status(const struct shell *sh, size_t argc, char **argv)
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	shell_print(sh, "EPI Guard M5");
+	shell_print(sh, "EPI Guard M6");
 
 #if IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
 	shell_print(sh, "API: mock local");

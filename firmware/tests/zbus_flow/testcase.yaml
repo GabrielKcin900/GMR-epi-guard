@@ -1,0 +1,5 @@
+tests:
+  epi.zbus_flow:
+    tags: epi zbus
+    integration_platforms:
+      - native_sim

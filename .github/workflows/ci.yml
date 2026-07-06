@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  twister:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: zephyrproject-rtos/zephyr
+          ref: v4.4.0
+          path: zephyr
+
+      - uses: actions/checkout@v4
+        with:
+          path: epi-guard
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencies
+        working-directory: zephyr
+        run: |
+          pip install west
+          west init -l ../epi-guard
+          west update -o=--depth=1
+          pip install -r scripts/requirements.txt
+
+      - name: Twister native_sim
+        working-directory: zephyr
+        run: |
+          source zephyr-env.sh
+          west twister -T ../epi-guard/firmware/tests -p native_sim --inline-logs

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "actuator_feedback.h"
 #include "epi_state.h"
 #include "zbus_channels.h"
 
@@ -222,15 +223,19 @@ static void feedback_handler(struct k_work *work)
 	struct feedback_ctx *ctx = CONTAINER_OF(work, struct feedback_ctx, work);
 	const struct verify_result *res = &ctx->result;
 
-	if (res->status != VERIFY_OK) {
+	switch (epi_feedback_from_result(res)) {
+	case EPI_FEEDBACK_ERROR:
 		run_error();
-		return;
-	}
-
-	if (res->allowed) {
+		break;
+	case EPI_FEEDBACK_ALLOWED:
 		run_allowed();
-	} else {
+		break;
+	case EPI_FEEDBACK_DENIED:
 		run_denied(res);
+		break;
+	default:
+		run_error();
+		break;
 	}
 }
 
@@ -242,20 +247,23 @@ static void schedule_feedback(const struct verify_result *res)
 
 static void handle_result(const struct verify_result *res)
 {
-	epi_state_store_result(res);
+	enum epi_feedback_kind kind;
 
-	if (res->status != VERIFY_OK) {
+	epi_state_store_result(res);
+	kind = epi_feedback_from_result(res);
+
+	if (kind == EPI_FEEDBACK_ERROR) {
 		schedule_feedback(res);
 		return;
 	}
 
-	if (res->unknown_person) {
+	if (kind == EPI_FEEDBACK_UNKNOWN) {
 		LOG_INF("result req_id=%u NAO CADASTRADO", res->req_id);
 		run_unknown();
 		return;
 	}
 
-	if (res->allowed) {
+	if (kind == EPI_FEEDBACK_ALLOWED) {
 		LOG_INF("result req_id=%u LIBERADO", res->req_id);
 	} else {
 		LOG_INF("result req_id=%u NEGADO (missing=%u)", res->req_id, res->missing_count);

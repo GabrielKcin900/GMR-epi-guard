@@ -33,7 +33,7 @@ int main(void)
 	}
 #endif
 
-	LOG_INF("EPI Guard firmware - marco M5");
+	LOG_INF("EPI Guard firmware - marco M6");
 #if IS_ENABLED(CONFIG_EPI_API_USE_MOCK)
 	LOG_INF("API: mock local (epi verify sem rede)");
 #else

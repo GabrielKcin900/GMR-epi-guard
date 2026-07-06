@@ -1,0 +1,5 @@
+tests:
+  epi.json_codec:
+    tags: epi json
+    integration_platforms:
+      - native_sim

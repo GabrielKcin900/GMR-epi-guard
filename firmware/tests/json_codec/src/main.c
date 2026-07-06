@@ -233,4 +233,129 @@ ZTEST(json_codec, test_encode_verify_response_buffer_small)
 	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
 }
 
+/*
+ * Casos -ENOSPC "cirurgicos": buffers dimensionados para estourar em cada
+ * ponto da serializacao (item, virgula, fechamento, sufixo), cobrindo os
+ * ramos de erro no meio dos loops.
+ * Prefixo de check_request p/ who="Ana": {"who":"Ana","with":[ = 21 chars.
+ * Prefixo de verify_response (ok/true): {"status":"ok","allowed":true,"missing":[ = 41.
+ */
+
+ZTEST(json_codec, test_encode_check_request_enospc_first_item)
+{
+	struct verify_request req;
+	const char *items[] = { "Capacete" };
+	char buf[25]; /* prefixo 21 cabe; "Capacete" (10) nao */
+
+	fill_request(&req, "Ana", items, 1);
+	zassert_equal(-ENOSPC, json_encode_check_request(&req, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_check_request_enospc_comma)
+{
+	struct verify_request req;
+	const char *items[] = { "Capacete", "Oculos" };
+	char buf[32]; /* 21+10=31; resta 1 p/ a virgula */
+
+	fill_request(&req, "Ana", items, 2);
+	zassert_equal(-ENOSPC, json_encode_check_request(&req, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_check_request_enospc_closing)
+{
+	struct verify_request req;
+	const char *items[] = { "Capacete" };
+	char buf[32]; /* 21+10=31; resta 1 p/ "]}" (2) */
+
+	fill_request(&req, "Ana", items, 1);
+	zassert_equal(-ENOSPC, json_encode_check_request(&req, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_verify_response_enospc_first_missing)
+{
+	struct verify_result res;
+	char buf[45]; /* prefixo 41 cabe; "Bota" (6) nao */
+
+	memset(&res, 0, sizeof(res));
+	res.status = VERIFY_OK;
+	res.allowed = true;
+	strncpy(res.missing[0], "Bota", EPI_NAME_LEN - 1);
+	res.missing_count = 1;
+
+	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_verify_response_enospc_comma)
+{
+	struct verify_result res;
+	char buf[48]; /* 41+6=47; resta 1 p/ a virgula */
+
+	memset(&res, 0, sizeof(res));
+	res.status = VERIFY_OK;
+	res.allowed = true;
+	strncpy(res.missing[0], "Bota", EPI_NAME_LEN - 1);
+	strncpy(res.missing[1], "Luva", EPI_NAME_LEN - 1);
+	res.missing_count = 2;
+
+	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_verify_response_enospc_bracket)
+{
+	struct verify_result res;
+	char buf[55]; /* 41+6+1+6=54; resta 1 p/ "]" */
+
+	memset(&res, 0, sizeof(res));
+	res.status = VERIFY_OK;
+	res.allowed = true;
+	strncpy(res.missing[0], "Bota", EPI_NAME_LEN - 1);
+	strncpy(res.missing[1], "Luva", EPI_NAME_LEN - 1);
+	res.missing_count = 2;
+
+	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_verify_response_enospc_unknown_suffix)
+{
+	struct verify_result res;
+	char buf[43]; /* 41+1("]")=42; resta 1 p/ ,"unknown_person":true (22) */
+
+	memset(&res, 0, sizeof(res));
+	res.status = VERIFY_OK;
+	res.allowed = true;
+	res.unknown_person = true;
+
+	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_encode_verify_response_enospc_final_brace)
+{
+	struct verify_result res;
+	char buf[65]; /* 41+1+22=64; resta 1 p/ "}" */
+
+	memset(&res, 0, sizeof(res));
+	res.status = VERIFY_OK;
+	res.allowed = true;
+	res.unknown_person = true;
+
+	zassert_equal(-ENOSPC, json_encode_verify_response(&res, buf, sizeof(buf)));
+}
+
+ZTEST(json_codec, test_parse_verify_request_null_args)
+{
+	char json[] = "{}";
+	struct verify_request req;
+
+	zassert_equal(-EINVAL, json_parse_verify_request(NULL, 0, &req));
+	zassert_equal(-EINVAL, json_parse_verify_request(json, strlen(json), NULL));
+}
+
+ZTEST(json_codec, test_parse_check_response_malformed)
+{
+	char json[] = "{not json";
+	struct verify_result res;
+
+	zassert_true(json_parse_check_response(json, strlen(json), &res) < 0);
+}
+
 ZTEST_SUITE(json_codec, NULL, NULL, NULL, NULL, NULL);

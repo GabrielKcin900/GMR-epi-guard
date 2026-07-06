@@ -1,2 +1,0 @@
-# Load Zephyr board Kconfig descriptions.
-osource "C:/Users/gabri/Documents/projeto_embarcados/zephyrproject/zephyr/boards/others/doit_esp32_devkit_v1/Kconfig"

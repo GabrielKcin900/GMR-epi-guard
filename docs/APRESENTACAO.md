@@ -46,7 +46,7 @@ Browser (dashboard) --WiFi--> ESP32 (HTTP :80)
 west twister -T epi-guard/firmware/tests -p native_sim --inline-logs
 ```
 
-19 casos ZTEST: JSON, feedback de atuador, fluxo zbus com mock.
+52 casos ZTEST em 6 suites: JSON (incl. casos de borda), feedback de atuador, fluxo zbus com mock, folding de nomes UTF-8, estado compartilhado e regras do mock da API.
 
 ## 6. Fallback se WiFi falhar
 

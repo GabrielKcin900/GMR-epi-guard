@@ -80,13 +80,16 @@ Casos de teste (`api/db.json`):
 
 ### Firmware (M6 — testes ZTEST + Twister)
 
-Tres suites unitarias em `firmware/tests/` (rodam em `native_sim`, sem hardware):
+Seis suites unitarias em `firmware/tests/` (52 casos, rodam em `native_sim`, sem hardware):
 
 | Suite | Cobertura |
 |-------|-----------|
-| `json_codec` | parse/serialize JSON (pedido, resposta API, resposta dashboard) |
+| `json_codec` | parse/serialize JSON (pedido, resposta API, resposta dashboard; NULL, buffer pequeno, campos ausentes, acentos) |
 | `validation` | resultado → padrao de feedback (liberado / negado / erro / desconhecido) |
 | `zbus_flow` | `chan_verify_request` → mock API → `chan_verify_result` |
+| `epi_names` | folding UTF-8 → ASCII (acentos, `_`→espaco, truncamento, bytes invalidos) e comparacao de nomes |
+| `epi_state` | ultimo pedido/resultado, `has_result`, `req_id` monotonico, NULL-safety |
+| `api_mock` | regras por pessoa, ordem dos itens, itens extras, acento no item, nao cadastrado, lista vazia |
 
 #### WSL (recomendado no Windows)
 

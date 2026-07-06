@@ -1,0 +1,5 @@
+tests:
+  epi.epi_state:
+    tags: epi state
+    integration_platforms:
+      - native_sim

@@ -28,7 +28,7 @@ int json_parse_check_response(char *json, size_t len, struct verify_result *out)
 int json_parse_verify_request(char *json, size_t len, struct verify_request *out);
 
 /**
- * Serializa resposta ao dashboard: { status, allowed, missing[], unknown_person? }.
+ * Serializa resposta ao dashboard: { status, allowed, missing[], unknown_person }.
  */
 int json_encode_verify_response(const struct verify_result *res, char *buf, size_t buflen);
 

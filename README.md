@@ -80,7 +80,7 @@ Casos de teste (`api/db.json`):
 
 ### Firmware (M6 — testes ZTEST + Twister)
 
-Seis suites unitarias em `firmware/tests/` (52 casos, rodam em `native_sim`, sem hardware):
+Seis suites unitarias em `firmware/tests/` (62 casos, rodam em `native_sim`, sem hardware — 98% de linhas e 90% de branches nos modulos de logica pura):
 
 | Suite | Cobertura |
 |-------|-----------|

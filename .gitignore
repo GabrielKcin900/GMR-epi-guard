@@ -2,6 +2,7 @@
 # west build -d firmware/build  ou  firmware/build-m3|m4|m5
 firmware/build/
 firmware/build-*/
+firmware/tests/*/build/
 
 # Cache west/cmake dentro do app
 firmware/.cache/

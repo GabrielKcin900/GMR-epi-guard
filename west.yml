@@ -1,0 +1,18 @@
+# Manifesto west do EPI Guard.
+# Permite `west init -l epi-guard` (CI e workspaces novos): o Zephyr v4.4.0
+# vira projeto gerenciado pelo `west update`. Sem modulos externos —
+# os testes em native_sim usam apenas a arvore principal do Zephyr.
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.0
+      clone-depth: 1
+      import: false
+
+  self:
+    path: epi-guard

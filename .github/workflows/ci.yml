@@ -24,16 +24,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Dependencies
+      # native_sim (32 bits) compila com o gcc do host: multilib + dtc + ninja
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-multilib g++-multilib device-tree-compiler gperf ninja-build
+
+      # Deps minimas do twister (evita spsdk/hidapi do requirements.txt completo)
+      - name: Python dependencies + west workspace
         working-directory: zephyr
         run: |
           pip install west
           west init -l ../epi-guard
-          west update -o=--depth=1
-          pip install -r scripts/requirements.txt
+          west update
+          pip install -r scripts/requirements-base.txt \
+                      -r scripts/requirements-build-test.txt \
+                      natsort tabulate
 
       - name: Twister native_sim
         working-directory: zephyr
+        env:
+          ZEPHYR_TOOLCHAIN_VARIANT: host
         run: |
           source zephyr-env.sh
           west twister -T ../epi-guard/firmware/tests -p native_sim --inline-logs

@@ -13,6 +13,7 @@ manifest:
       revision: v4.4.0
       clone-depth: 1
       import: false
+      west-commands: scripts/west-commands.yml
 
   self:
     path: epi-guard
